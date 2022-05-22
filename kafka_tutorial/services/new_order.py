@@ -2,8 +2,9 @@ from random import randint
 from uuid import uuid4
 
 from confluent_kafka import SerializingProducer
+
 from kafka_tutorial import settings
-from kafka_tutorial.order import Order, serializer
+from kafka_tutorial.order import Order, key_serializer, value_serializer
 
 
 def delivery_callback(err, msg):
@@ -15,7 +16,11 @@ def delivery_callback(err, msg):
 
 def main():
     producer = SerializingProducer(
-        {**settings.get_config(), "value.serializer": serializer}
+        {
+            **settings.get_config(),
+            "value.serializer": value_serializer,
+            "key.serializer": key_serializer,
+        }
     )
     for i in range(10):
         user_id = uuid4()
@@ -23,14 +28,14 @@ def main():
 
         producer.produce(
             settings.ECOMMERCE_NEW_ORDER,
-            user_id.hex,
-            order,
+            key=user_id,
+            value=order,
             on_delivery=delivery_callback,
         )
 
         producer.produce(
             settings.ECOMMERCE_SEND_EMAIL,
-            key=user_id.hex,
+            key=user_id,
             value="Thank you for your order! We are processing your order!",
             on_delivery=delivery_callback,
         )

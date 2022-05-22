@@ -1,5 +1,4 @@
 from confluent_kafka import DeserializingConsumer
-
 from kafka_tutorial import settings
 
 

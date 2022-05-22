@@ -20,9 +20,17 @@ class EnhancedJSONEncoder(json.JSONEncoder):
         return super().default(o)
 
 
-def serializer(obj, context) -> bytes:
+def value_serializer(obj, context) -> bytes:
     return json.dumps(obj, cls=EnhancedJSONEncoder).encode("utf-8")
 
 
-def deserializer(context, data):
+def value_deserializer(context, data):
     return Order(json.loads(data.decode("utf-8")))
+
+
+def key_serializer(obj, context) -> bytes:
+    return getattr(obj, "hex", "").encode("utf-8")
+
+
+def key_deserializer(context, data):
+    return UUID(hex=data.decode())
