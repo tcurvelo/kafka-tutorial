@@ -1,28 +1,18 @@
-from confluent_kafka import DeserializingConsumer
 from kafka_tutorial import settings
+from kafka_tutorial.services import KafkaService
 
 
-def main():
-    consumer = DeserializingConsumer(settings.get_config(extras=["log"]))
-    consumer.subscribe(topics=[settings.ECOMMERCE_ALL])
+class LogService(KafkaService):
+    def __init__(self, *args, **kwargs):
+        super().__init__([settings.ECOMMERCE_ALL], *args, extras=["email"], **kwargs)
 
-    try:
-        while True:
-            if (msg := consumer.poll(3)) is None:
-                print("Waiting...")
-            elif msg.error():
-                print("ERROR: %s".format(msg.error()))
-            else:
-                print(
-                    f"✨ [{msg.topic()}]\t{msg.key().decode()}:\tpartition:{msg.partition()}\toffset:{msg.offset()}"
-                    f"\n  {msg.value().decode()}"
-                    f"\n{'-'*100}"
-                )
-    except KeyboardInterrupt:
-        pass
-    finally:
-        consumer.close()
+    def parse(self, msg):
+        print(
+            f"✨ [{msg.topic()}]\t{msg.key().decode()}:\tpartition:{msg.partition()}\toffset:{msg.offset()}"
+            f"\n  {msg.value().decode()}"
+            f"\n{'-'*100}"
+        )
 
 
 if __name__ == "__main__":
-    main()
+    LogService()()
