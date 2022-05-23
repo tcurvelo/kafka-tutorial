@@ -1,7 +1,8 @@
 from typing import Any
 
-from confluent_kafka import DeserializingConsumer
+from confluent_kafka import DeserializingConsumer, SerializingProducer
 from kafka_tutorial import settings
+from kafka_tutorial.utils import key_serializer, value_serializer
 
 
 class KafkaService:
@@ -28,3 +29,27 @@ class KafkaService:
             pass
         finally:
             self.consumer.close()
+
+
+def delivery_callback(err, msg):
+    if err:
+        print("ERROR: Message failed delivery: {}".format(err))
+    else:
+        print(f"🚀 [{msg.topic()}]\t{msg.key().decode()}")
+
+
+class KafkaDispatcher:
+    def __init__(self):
+        self.producer = SerializingProducer(
+            {
+                **settings.get_config(),
+                "value.serializer": value_serializer,
+                "key.serializer": key_serializer,
+            }
+        )
+
+    def __del__(self):
+        self.producer.flush()
+
+    def send(self, topic, key, value):
+        self.producer.produce(topic, key, value, on_delivery=delivery_callback)
