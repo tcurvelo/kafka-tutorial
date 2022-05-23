@@ -5,9 +5,12 @@ from kafka_tutorial import settings
 
 
 class KafkaService:
-    def __init__(self, topics, parse=None, extras=None):
-        properties = settings.get_config(extras=extras)
-        self.consumer = DeserializingConsumer(properties)
+    def __init__(self, topics, parse=None, extras=None, properties=None):
+        config = {
+            **settings.get_config(extras=extras),
+            **(properties if properties else {}),
+        }
+        self.consumer = DeserializingConsumer(config)
         self.consumer.subscribe(topics=topics)
         if not hasattr(self, "parse"):
             self.parse = parse
