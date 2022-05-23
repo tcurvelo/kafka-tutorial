@@ -24,13 +24,13 @@ def value_serializer(obj, context) -> bytes:
     return json.dumps(obj, cls=EnhancedJSONEncoder).encode("utf-8")
 
 
-def value_deserializer(context, data):
-    return Order(json.loads(data.decode("utf-8")))
+def value_deserializer(data, context):
+    return Order(**json.loads(data.decode("utf-8")))
 
 
 def key_serializer(obj, context) -> bytes:
     return getattr(obj, "hex", "").encode("utf-8")
 
 
-def key_deserializer(context, data):
-    return UUID(hex=data.decode())
+def key_deserializer(data, context):
+    return UUID(hex=data.decode("utf-8"))
