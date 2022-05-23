@@ -6,13 +6,13 @@ from kafka_tutorial.utils import key_serializer, value_serializer
 
 
 class KafkaService:
-    def __init__(self, topics, parse=None, extras=None, properties=None):
+    def __init__(self, topic: settings.Topic, parse=None, extras=None, properties=None):
         config = {
             **settings.get_config(extras=extras),
             **(properties if properties else {}),
         }
         self.consumer = DeserializingConsumer(config)
-        self.consumer.subscribe(topics=topics)
+        self.consumer.subscribe(topics=[topic.value])
         if not hasattr(self, "parse"):
             self.parse = parse
 
@@ -51,5 +51,5 @@ class KafkaDispatcher:
     def __del__(self):
         self.producer.flush()
 
-    def send(self, topic, key, value):
-        self.producer.produce(topic, key, value, on_delivery=delivery_callback)
+    def send(self, topic: settings.Topic, key, value):
+        self.producer.produce(topic.value, key, value, on_delivery=delivery_callback)

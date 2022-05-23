@@ -6,7 +6,10 @@ from kafka_tutorial.services import KafkaService
 
 class EmailService(KafkaService):
     def __init__(self):
-        super().__init__(topics=[settings.ECOMMERCE_SEND_EMAIL], extras=["email"])
+        super().__init__(
+            topic=settings.Topic.ECOMMERCE_SEND_EMAIL,
+            extras=["email"],
+        )
 
     def parse(self, msg):
         print(

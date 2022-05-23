@@ -1,15 +1,16 @@
 import time
 
 from kafka_tutorial import settings
-from kafka_tutorial.order import key_deserializer, value_deserializer
+from kafka_tutorial.order import Order
 from kafka_tutorial.services import KafkaDispatcher, KafkaService
+from kafka_tutorial.utils import key_deserializer, value_deserializer
 
 
 class FraudDetectorService(KafkaService):
     def __init__(self, *args, **kwargs):
 
         super().__init__(
-            topics=[settings.ECOMMERCE_NEW_ORDER],
+            topic=settings.Topic.ECOMMERCE_NEW_ORDER,
             extras=["fraud_detector"],
             properties={
                 "key.deserializer": key_deserializer,
@@ -23,9 +24,9 @@ class FraudDetectorService(KafkaService):
             "🕵️ Processing new order, checking for fraud: "
             f"{msg.key()}: {msg.value()} ({msg.partition()}, {msg.offset()})"
         )
-        time.sleep(5)
+        time.sleep(1)
 
-        order = msg.value()
+        order = Order(**msg.value())
         if self.is_fraud(order):
             print("💀 Order is a fraud!")
             self.dispatcher.send(
@@ -33,7 +34,11 @@ class FraudDetectorService(KafkaService):
             )
         else:
             print("✔️ Order processed")
-            self.dispatcher.send(settings.ECOMMERCE_ORDER_APROVED, order.user_id, order)
+            self.dispatcher.send(
+                settings.Topic.ECOMMERCE_ORDER_APROVED,
+                order.user_id,
+                order,
+            )
 
         print("------------------------------------------")
 
