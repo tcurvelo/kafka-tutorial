@@ -1,6 +1,8 @@
+TOPICS := $(shell python -m kafka_tutorial.settings | awk '{print "topic-"$$1}')
+
 .PHONY: topics
 
-topics: topic-ECOMMERCE_NEW_ORDER topic-ECOMMERCE_SEND_EMAIL
+topics: $(TOPICS)
 
 topic-%:
 	@docker compose exec broker \
